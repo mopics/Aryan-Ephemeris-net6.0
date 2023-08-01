@@ -4,12 +4,18 @@ using System.Runtime.CompilerServices;
 
 namespace AryanEphemeris.Samples
 {
+    public struct Vector3
+    {
+        public double x; public double y; public double z;
+    }
     public struct PlanetInSign
     {
         public EphemerisComponent planet;
         public string sign;
         public double degreesInSign;
         public double degreesTotal;
+        public Vector3 position;
+        public Vector3 velocity;
     }
 
     public class AstroChart
@@ -34,31 +40,33 @@ namespace AryanEphemeris.Samples
 
         public static PlanetInSign getPlanet(Ephemeris eph, DateTime date, EphemerisComponent planet)
         {
-            var jdate = Utilities.ConvertToJulian(date);
-            var coordinates = eph.Interpolate(jdate, planet, EphemerisComponent.Earth);
-            var deltaX = coordinates[0];
-            var deltaY = coordinates[1];
-            var rad = Math.Atan2(deltaY, deltaX); // In radians
-            var deg = rad * (180 / Math.PI);
+            long jdate = Utilities.ConvertToJulian(date);
+            double[] coordinates = eph.Interpolate(jdate, planet, EphemerisComponent.Earth);
+            double deltaX = coordinates[0];
+            double deltaY = coordinates[1];
+            double rad = Math.Atan2(deltaY, deltaX); // In radians
+            double deg = rad * (180.0d / Math.PI);
 
             if (deg < 0)
             {
-                deg = 360 + deg;
+                deg = 360.0d + deg;
             }
-            var degreeInSign = deg % 30;
+            double degreeInSign = deg % 30;
             int signIdx = (int)Math.Floor(deg / 30);
-            var sign = AstroChart.signs[signIdx];
+            string sign = AstroChart.signs[signIdx];
 
             return new PlanetInSign
             {
                 planet = planet,
                 sign = AstroChart.signs[signIdx],
                 degreesInSign = (double) deg % 30,
-                degreesTotal = (double) deg
+                degreesTotal = (double) deg,
+                position = { x = coordinates[0], y = coordinates[1], z = coordinates[2] },
+                velocity = { x = coordinates[3], y = coordinates[4], z = coordinates[5] },
             };
         }
 
-        public void InterpolateEphemeris()
+        private void InterpolateEphemeris()
         {
             
             sun = AstroChart.getPlanet(eph, date, EphemerisComponent.Sun);

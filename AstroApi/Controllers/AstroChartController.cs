@@ -4,19 +4,33 @@ using AryanEphemeris.Samples;
 
 namespace AstroApi.Controllers
 {
-    public class AstroChartController : Controller
+    [ApiController]
+    public class AstroChartController : ControllerBase
     {
-        public IActionResult Index()
+        private readonly ILogger<WeatherForecastController> _logger;
+
+        public AstroChartController(ILogger<WeatherForecastController> logger)
         {
-            var ephemerisPath = Path.Combine(FilePaths.DataPath, "binary.430");
+            _logger = logger;
+        }
+
+        [HttpGet]
+        [Route("api/astrochart/get")]
+        public IEnumerable<AstroChart> Get()
+        {
+            var ephemerisPath = Path.Combine(@"..\data\", "binary.430");
             AryanKernel.LoadEphemeris(ephemerisPath);
             var eph = AryanKernel.GetEphemeris();
 
 
-            var ChuckNorris = new AstroChart(eph, new DateTime(1940, 3, 10, 15, 0, 0), "Chuck", "Norris");
-            ChuckNorris.PrintChart();
+            var chuck = new AstroChart(eph, new DateTime(1940, 3, 10, 15, 0, 0), "Chuck", "Norris");
 
-            return View();
+            // result.PrintChart();
+
+            var result = new List<AstroChart>();
+            result.Add(chuck);
+
+            return result;
         }
     }
 }
